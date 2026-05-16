@@ -14,13 +14,8 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
 @keyframes shieldPulse {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(0,220,255,0);
-    border-color: rgba(0,220,255,0.9);
-  }
-  50% {
-    box-shadow: 0 0 24px 4px rgba(0,220,255,0.25);
-  }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0,220,255,0); border-color: rgba(0,220,255,0.9); }
+  50% { box-shadow: 0 0 24px 4px rgba(0,220,255,0.25); }
 }
 @keyframes shieldReady{0%,100%{border-color:rgba(0,220,255,0.4)}50%{border-color:rgba(0,220,255,0.9)}}
 @keyframes cdPop{0%{transform:translate(-50%,-50%) scale(0.6);opacity:0}40%{transform:translate(-50%,-50%) scale(1.12);opacity:1}100%{transform:translate(-50%,-50%) scale(1.3);opacity:0}}
@@ -41,6 +36,11 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
 .hud-title{font-size:10px;text-transform:uppercase;color:rgba(160,190,230,.5);letter-spacing:1.4px;font-weight:700;}
 .hud-num{font-size:28px;font-weight:900;color:#fff;margin-top:2px;text-shadow:0 2px 8px rgba(0,0,0,.3);}
 .hud-unit{font-size:13px;opacity:.4;font-weight:500;margin-left:3px;}
+
+#hudCoins .hud-title{color:rgba(255,215,0,.7);}
+#hudCoins .hud-num{color:#ffd700;text-shadow:0 0 12px rgba(255,215,0,.3),0 2px 8px rgba(0,0,0,.3);}
+#hudCoins{border-color:rgba(255,215,0,.15);}
+#hudCoins.active{border-color:rgba(255,215,0,.25);}
 
 #shieldHud{background:rgba(5,8,18,.6);backdrop-filter:blur(14px);border-radius:14px;padding:12px 20px;border:1px solid rgba(0,220,255,.15);min-width:150px;transform:translateY(-10px);opacity:0;transition:all .4s ease;}
 #shieldHud.active{transform:translateY(0);opacity:1;}
@@ -65,6 +65,7 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
 .go-stat .num{font-size:clamp(28px,4vw,40px);font-weight:900;color:#fff;line-height:1;}
 .go-stat .lbl{font-size:11px;text-transform:uppercase;color:rgba(180,210,255,.4);letter-spacing:1.2px;margin-top:6px;font-weight:700;}
 .go-stat.best .num{color:#ffeaa7;}
+.go-stat.coins-stat .num{color:#ffd700;}
 
 #touchControls{position:absolute;bottom:24px;left:0;width:100%;display:none;justify-content:space-between;align-items:center;padding:0 24px;z-index:13;pointer-events:none;}
 .tbtn{width:88px;height:88px;border-radius:50%;background:rgba(255,255,255,.08);backdrop-filter:blur(10px);border:2px solid rgba(255,255,255,.18);color:#fff;font-size:32px;display:flex;align-items:center;justify-content:center;pointer-events:auto;user-select:none;transition:all .12s;box-shadow:0 4px 20px rgba(0,0,0,.2);}
@@ -78,7 +79,7 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
 
 <div id="hud">
   <div class="hud-card" id="hudDist">
-    <div class="hud-title">🏃‍♂️‍➡️ Distance</div>
+    <div class="hud-title">🏃 Distance</div>
     <div class="hud-num"><span id="valDist">0</span><span class="hud-unit">m</span></div>
   </div>
   <div class="hud-card" id="hudCoins">
@@ -107,7 +108,8 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
   <div class="hint">
     SPACE / ↑ = Jump &nbsp;·&nbsp; ↓ = Slide &nbsp;·&nbsp; <b style="color:rgba(0,220,255,.7)">S = Shield</b><br>
     Double-tap ↑ for a second jump in mid-air<br>
-    Shield blocks ALL damage — 10 second cooldown
+    Shield blocks ALL damage — 10 second cooldown<br>
+    <span style="color:rgba(255,215,0,.6)">🪙 Every 500m = +1 Coin</span>
   </div>
 </div>
 
@@ -117,6 +119,7 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
     <div class="go-row">
       <div class="go-stat"><div class="num" id="goDist">0m</div><div class="lbl">Distance</div></div>
       <div class="go-stat best"><div class="num" id="goBest">0m</div><div class="lbl">Record</div></div>
+      <div class="go-stat coins-stat"><div class="num" id="goCoins">0</div><div class="lbl">🪙 Coins</div></div>
       <div class="go-stat"><div class="num" id="goTime">0s</div><div class="lbl">Duration</div></div>
       <div class="go-stat"><div class="num" id="goNear">0</div><div class="lbl">Near Misses</div></div>
     </div>
@@ -184,6 +187,7 @@ const Snd = {
   shOn(){ this.tone(880,.22,'sine',.16,1200); },
   shOff(){ this.tone(440,.18,'sine',.1,200); },
   shBlock(){ this.tone(700,.08,'square',.18,1100); this.noise(.06,.06); },
+  coin(){ this.tone(1046,.12,'sine',.18,1318); },
 };
 
 /* ── particles ── */
@@ -222,9 +226,7 @@ const parts = new Particles();
 /* ── shield ── */
 const SHIELD = {
   active:false, energy:1, cooldown:0,
-  DURATION:3,
-  COOLDOWN:10,
-  REGEN:.18,
+  DURATION:3, COOLDOWN:10, REGEN:.18,
   reset(){ this.active=false; this.energy=1; this.cooldown=0; },
   tryOn(){
     if(this.active||this.cooldown>0||this.energy<.02) return;
@@ -314,7 +316,7 @@ const LASERS={
     for(let i=this.list.length-1;i>=0;i--){
       const l=this.list[i];
       l.life-=dt;
-      if(!l.active && l.life<= .6) l.active=true;
+      if(!l.active && l.life<=.6) l.active=true;
       if(l.life<=0) this.list.splice(i,1);
     }
   },
@@ -324,11 +326,9 @@ const LASERS={
         const alpha=clamp(l.life/.15,0,1);
         ctx.save();
         ctx.shadowColor='#ff0066'; ctx.shadowBlur=30;
-        ctx.globalAlpha=.18*alpha;
-        ctx.fillStyle='#ff0066';
+        ctx.globalAlpha=.18*alpha; ctx.fillStyle='#ff0066';
         ctx.fillRect(0,l.y-10,W,20);
-        ctx.globalAlpha=alpha*.9;
-        ctx.strokeStyle='#ff2288'; ctx.lineWidth=3;
+        ctx.globalAlpha=alpha*.9; ctx.strokeStyle='#ff2288'; ctx.lineWidth=3;
         ctx.beginPath(); ctx.moveTo(0,l.y); ctx.lineTo(W,l.y); ctx.stroke();
         ctx.strokeStyle='rgba(255,200,220,.8)'; ctx.lineWidth=1;
         ctx.beginPath(); ctx.moveTo(0,l.y); ctx.lineTo(W,l.y); ctx.stroke();
@@ -336,13 +336,11 @@ const LASERS={
       } else {
         const flashOn = Math.floor(l.life*8)%2===0;
         if(flashOn){
-          ctx.save();
-          ctx.globalAlpha=.25;
+          ctx.save(); ctx.globalAlpha=.25;
           ctx.strokeStyle='#ff0066'; ctx.lineWidth=1.5;
           ctx.setLineDash([8,12]);
           ctx.beginPath(); ctx.moveTo(0,l.y); ctx.lineTo(W,l.y); ctx.stroke();
-          ctx.setLineDash([]);
-          ctx.restore();
+          ctx.setLineDash([]); ctx.restore();
         }
       }
     }
@@ -463,12 +461,7 @@ const player={
   H:114, W:26,
   crouchAmt:0, tgtCrouch:0,
   djLeft:1, jumpPrev:false, jumpConsumed:false,
-
-  // Walk/run gait
-  stepPhase:0,
-  airTime:0,        // accumulated air time for smooth air-to-land transition
-  landBlend:0,      // 0=in-air pose, 1=fully landed/walking (eases in on landing)
-  prevGrounded:true,
+  stepPhase:0, airTime:0, landBlend:0, prevGrounded:true,
 
   get h(){ return this.H; },
   get gx(){ return this.x; },
@@ -485,8 +478,6 @@ const player={
 
   update(dt,inp,spd){
     this.x=W*.22;
-
-    // blink
     this.blinkT+=dt;
     if(this.blinkT>this.nextBlink){ this.blinkT=0; this.nextBlink=rand(1.2,4); this.blinking=true; setTimeout(()=>{ this.blinking=false; },90); }
 
@@ -528,7 +519,7 @@ const player={
     if(!this.grounded){
       this.vy+=2100*dt; this.y+=this.vy*dt;
       this.airTime+=dt;
-      this.landBlend=Math.max(0, this.landBlend - dt * 8); // fade toward air pose
+      this.landBlend=Math.max(0, this.landBlend - dt * 8);
       if(this.y>=0){
         this.y=0; this.vy=0; this.grounded=true; this.djLeft=1; this.jumpConsumed=false;
         this.tgtSquash=.78; setTimeout(()=>this.tgtSquash=1,120);
@@ -537,16 +528,13 @@ const player={
         parts.emit(14,this.gx,this.gy,{speed:80,up:30,life:.4,minSize:1.5,maxSize:5,colors:['#aab','#99a','#ccd'],grav:300,grow:-6});
       }
     } else {
-      // Advance stride phase — faster at higher speeds
       const strideFreq = clamp(spd / 200, 1.2, 4.0) * 7.0;
       this.stepPhase += dt * strideFreq;
       this.runPhase  += dt*(spd/280)*11;
-      // Quickly blend back to walk pose after landing
       this.landBlend = Math.min(1, this.landBlend + dt * 12);
     }
     this.squash+=(this.tgtSquash-this.squash)*14*dt;
 
-    // scarf physics
     this.scarfPh+=dt*10;
     const headY=this.gy-this.H*.88+this.y-this.crouchAmt*this.H*.32;
     let sx=this.gx-5, sy=headY+this.H*.1;
@@ -596,7 +584,6 @@ const player={
       ctx.restore();
     }
 
-    // scarf
     ctx.strokeStyle=SHIELD.active?'rgba(0,255,255,.6)':'rgba(0,200,255,.45)';
     ctx.lineWidth=3;
     const scarfSY=gy-this.H*.88+this.y-c*this.H*.32;
@@ -617,40 +604,21 @@ const player={
     ctx.restore();
   },
 
-  /* ════════════════════════════════════════════════
-     IMPROVED WALK / RUN ANIMATION
-     - Full solid colour (no faded back limbs) matching slide
-     - Much faster limb movement cadence
-     - Exaggerated arm pump matching sprint energy
-     - Smooth hip bounce and torso drive
-     - Natural foot strike with toe push-off
-     ════════════════════════════════════════════════ */
   _drawWalk(ctx, cx, gy, sq) {
     const h         = this.H;
     const ph        = this.stepPhase;
     const speedNorm = clamp((gameSpeed - 300) / 600, 0, 1);
     const col       = ctx.strokeStyle;
-
-    // Forward lean increases with speed (like a real sprinter)
     const lean = speedNorm * 0.13;
-
-    // Proportions
     const THIGH    = h * 0.275;
     const SHIN     = h * 0.265;
     const UPPERARM = h * 0.195;
-    const FOREARM  = h * (0.165 - speedNorm * 0.035); // elbow bends at speed
-
-    // Foot ground plane
+    const FOREARM  = h * (0.165 - speedNorm * 0.035);
     const footY = gy;
-
-    // ── Hip: realistic vertical bounce (rises at push-off, dips at mid-swing) ──
-    // Use absolute value of sin to get TWO rises per full stride cycle (bilateral)
     const hipBounce = h * 0.025 * Math.abs(Math.sin(ph));
     const hipBaseY  = gy - h * 0.335;
-    const hipY      = hipBaseY - hipBounce; // bounce UP, not down
+    const hipY      = hipBaseY - hipBounce;
     const hipX      = cx;
-
-    // ── Torso: leans into direction of travel ──
     const torsoLen = h * 0.295;
     const shouldY  = hipY  - Math.cos(lean) * torsoLen;
     const shouldX  = hipX  + Math.sin(lean) * torsoLen;
@@ -658,83 +626,48 @@ const player={
     const neckX    = shouldX;
     const headY    = neckY  - h * 0.13 * sq;
     const headX    = neckX  + Math.sin(lean) * h * 0.025;
-
-    // ── Legs: exaggerated stride at speed ──
     const stride  = h * (0.20 + speedNorm * 0.18);
-    // Foot lift — pronounced knee drive at higher speeds
     const liftAmt = h * (0.10 + speedNorm * 0.12);
-
-    // Left leg (leads at phase = 0)
     const lSin  = Math.sin(ph);
     const lLift = Math.max(0, lSin) * liftAmt;
     const lFX   = hipX + lSin * stride;
     const lFY   = footY - lLift;
     const {jx:lKX, jy:lKY} = solveIK(hipX, hipY, lFX, lFY, THIGH, SHIN, -1);
-
-    // Right leg (π offset)
     const rSin  = Math.sin(ph + Math.PI);
     const rLift = Math.max(0, rSin) * liftAmt;
     const rFX   = hipX + rSin * stride;
     const rFY   = footY - rLift;
     const {jx:rKX, jy:rKY} = solveIK(hipX, hipY, rFX, rFY, THIGH, SHIN, -1);
-
-    // ── Arms: vigorous counter-rotation pump ──
-    // Each arm is counter-phase to the opposite leg
-    // At high speed, arms pump further forward AND backward
     const armSwing  = h * (0.16 + speedNorm * 0.14);
-    const armRaise  = h * (0.04 + speedNorm * 0.06); // wrist rise on forward swing
-
-    // Left arm swings with RIGHT leg phase
+    const armRaise  = h * (0.04 + speedNorm * 0.06);
     const lASin = Math.sin(ph + Math.PI);
     const lHX   = shouldX + lASin * armSwing * 0.9;
     const lHY   = shouldY + h * 0.17 - Math.max(0, lASin) * armRaise;
     const {jx:lEX, jy:lEY} = solveIK(shouldX, shouldY, lHX, lHY, UPPERARM, FOREARM, +1);
-
-    // Right arm swings with LEFT leg phase
     const rASin = Math.sin(ph);
     const rHX   = shouldX + rASin * armSwing * 0.9;
     const rHY   = shouldY + h * 0.17 - Math.max(0, rASin) * armRaise;
     const {jx:rEX, jy:rEY} = solveIK(shouldX, shouldY, rHX, rHY, UPPERARM, FOREARM, -1);
-
-    // ─────────────────────────────────────────────
-    // DRAW ORDER: back limbs (same solid colour, slightly thinner)
-    // then torso+head, then front limbs on top
-    // No fading — all limbs drawn at full opacity
-    // ─────────────────────────────────────────────
-
     ctx.fillStyle = col;
-
-    // ── Back leg (right) ──
     ctx.lineWidth = 3.8;
     ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(rKX, rKY); ctx.lineTo(rFX, rFY); ctx.stroke();
     ctx.beginPath(); ctx.arc(rKX, rKY, 2.2, 0, Math.PI * 2); ctx.fill();
     this._drawFoot(ctx, rFX, rFY, rKX, rKY, rSin, 3.0);
-
-    // ── Back arm (right) ──
     ctx.lineWidth = 3.2;
     ctx.beginPath(); ctx.moveTo(shouldX, shouldY); ctx.lineTo(rEX, rEY); ctx.lineTo(rHX, rHY); ctx.stroke();
     ctx.beginPath(); ctx.arc(rEX, rEY, 2.0, 0, Math.PI * 2); ctx.fill();
-
-    // ── Torso ──
     ctx.lineWidth = 5.0;
     ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(shouldX, shouldY); ctx.stroke();
-
-    // ── Head ──
     this._drawHead(ctx, headX, headY, h, lean * 0.5);
-
-    // ── Front leg (left) ──
     ctx.lineWidth = 5.0;
     ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(lKX, lKY); ctx.lineTo(lFX, lFY); ctx.stroke();
     ctx.beginPath(); ctx.arc(lKX, lKY, 2.8, 0, Math.PI * 2); ctx.fill();
     this._drawFoot(ctx, lFX, lFY, lKX, lKY, lSin, 3.5);
-
-    // ── Front arm (left) ──
     ctx.lineWidth = 4.0;
     ctx.beginPath(); ctx.moveTo(shouldX, shouldY); ctx.lineTo(lEX, lEY); ctx.lineTo(lHX, lHY); ctx.stroke();
     ctx.beginPath(); ctx.arc(lEX, lEY, 2.5, 0, Math.PI * 2); ctx.fill();
   },
 
-  /* ── SLIDE / CROUCH pose — UNCHANGED ── */
   _drawSlide(ctx,cx,gy,c,sq){
     const h=this.H, ph=this.runPhase;
     const footY=gy-2;
@@ -748,26 +681,21 @@ const player={
     const nY=shouldY-Math.cos(tilt)*h*.04;
     const hX=nX+Math.sin(tilt)*h*.10;
     const hY=nY-Math.cos(tilt)*h*.10;
-
     this._drawHead(ctx,hX,hY,h*.9,tilt*.5);
-
     ctx.lineWidth=4;
     ctx.beginPath(); ctx.moveTo(nX,nY);
     ctx.quadraticCurveTo(cx+Math.sin(tilt)*tLen*.5,hipY-Math.cos(tilt)*tLen*.5+c*8,cx,hipY);
     ctx.stroke();
-
     const thigh=h*.26, shin=h*.27, stride=h*.12;
     const lFX=cx+Math.sin(ph)*stride, lFY=footY;
     const rFX=cx+Math.sin(ph+Math.PI)*stride, rFY=footY;
     const {jx:lKX,jy:lKY}=solveIK(cx,hipY,lFX,lFY,thigh,shin,-1);
     const {jx:rKX,jy:rKY}=solveIK(cx,hipY,rFX,rFY,thigh,shin,-1);
-
     ctx.lineWidth=4;
     ctx.beginPath(); ctx.moveTo(cx,hipY); ctx.lineTo(lKX,lKY); ctx.lineTo(lFX,lFY); ctx.stroke();
     ctx.fillStyle=ctx.strokeStyle; ctx.beginPath(); ctx.arc(lKX,lKY,2.5,0,Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.moveTo(cx,hipY); ctx.lineTo(rKX,rKY); ctx.lineTo(rFX,rFY); ctx.stroke();
     ctx.beginPath(); ctx.arc(rKX,rKY,2.5,0,Math.PI*2); ctx.fill();
-
     const ua=h*.20,fa=h*.17,sw=h*.11;
     const lHX=shouldX+sw*.5-sw*Math.sin(ph+Math.PI)*.5, lHY=shouldY+h*.12+c*h*.1;
     const rHX=shouldX+sw*.5-sw*Math.sin(ph)*.5,         rHY=shouldY+h*.12+c*h*.1;
@@ -780,53 +708,19 @@ const player={
     ctx.beginPath(); ctx.arc(rEX,rEY,2.5,0,Math.PI*2); ctx.fill();
   },
 
-  /* ════════════════════════════════════════════════
-     IMPROVED AIR / JUMP ANIMATION
-     
-     Three distinct phases with smooth interpolation:
-     
-     LAUNCH  (vy very negative, just left ground):
-       Body squashes tall-narrow, knees tuck, arms blast upward
-     
-     ASCENT  (vy negative):
-       Powerful athlete tuck — knees drawn up to chest,
-       arms spread wide for balance and lift
-     
-     APEX    (vy near zero):
-       Brief hang moment — body extends, limbs splay outward
-       like a star, giving a satisfying "float" beat
-     
-     DESCENT (vy positive):
-       Legs reach down and forward, knees soft,
-       arms sweep back-and-down for aerodynamic control,
-       preparing for landing impact
-     
-     All transitions are smooth via eased blending.
-     ════════════════════════════════════════════════ */
   _drawAir(ctx, cx, gy, c, sq) {
     const h   = this.H;
     const off = this.y;
     const vy  = this.vy;
     const col = ctx.strokeStyle;
-
-    // Normalise vy: -1 = full ascent, 0 = apex, +1 = full descent
     const vyN = clamp(vy / 1050, -1, 1);
-
-    // Smooth eased phase weights
-    // ascent: 1 when going up fast, eases to 0 at apex
     const ascentT  = clamp(-vyN, 0, 1);
-    const ascentS  = ascentT * ascentT * (3 - 2 * ascentT); // smoothstep
-    // descent: 1 when falling fast, 0 at apex
+    const ascentS  = ascentT * ascentT * (3 - 2 * ascentT);
     const descentT = clamp(vyN, 0, 1);
     const descentS = descentT * descentT * (3 - 2 * descentT);
-    // apex: bell curve peaking at vyN=0
     const apexT    = clamp(1 - Math.abs(vyN) * 3, 0, 1);
     const apexS    = apexT * apexT;
-
-    // Forward lean: lean into ascent, arch back slightly on descent
-    const lean = vyN * -0.08; // neg vy = lean fwd, pos vy = lean back
-
-    // ── Skeleton ──
+    const lean = vyN * -0.08;
     const hipY     = gy + off - h * 0.33;
     const hipX     = cx + lean * h * 0.08;
     const torsoLen = h * 0.295;
@@ -836,100 +730,40 @@ const player={
     const neckX    = shouldX;
     const headY    = neckY  - h * 0.13 * sq;
     const headX    = neckX  + lean * h * 0.025;
-
-    // ── Legs ──
     const THIGH = h * 0.275;
     const SHIN  = h * 0.265;
-
-    // Left foot: tucks up and back on ascent, extends forward-down on descent
-    // Apex: splays sideways for hang pose
-    const lFX = hipX
-      + ascentS  * (-h * 0.08)                   // tuck back on ascent
-      + apexS    * (-h * 0.18)                    // splay left at apex
-      + descentS * (+h * 0.16);                   // reach forward for landing
-    const lFY = hipY
-      + ascentS  * (-h * 0.22)                    // knee up on ascent
-      + apexS    * (+h * 0.05)                    // extend slightly at apex
-      + descentS * (+h * 0.30);                   // reach down on descent
-
-    // Right foot: mirrors with slight asymmetry for natural look
-    const rFX = hipX
-      + ascentS  * (+h * 0.04)
-      + apexS    * (+h * 0.12)                    // splay right at apex
-      + descentS * (+h * 0.10);
-    const rFY = hipY
-      + ascentS  * (-h * 0.18)
-      + apexS    * (+h * 0.05)
-      + descentS * (+h * 0.28);
-
+    const lFX = hipX + ascentS*(-h*0.08) + apexS*(-h*0.18) + descentS*(+h*0.16);
+    const lFY = hipY + ascentS*(-h*0.22) + apexS*(+h*0.05) + descentS*(+h*0.30);
+    const rFX = hipX + ascentS*(+h*0.04) + apexS*(+h*0.12) + descentS*(+h*0.10);
+    const rFY = hipY + ascentS*(-h*0.18) + apexS*(+h*0.05) + descentS*(+h*0.28);
     const {jx:lKX, jy:lKY} = solveIK(hipX, hipY, lFX, lFY, THIGH, SHIN, -1);
     const {jx:rKX, jy:rKY} = solveIK(hipX, hipY, rFX, rFY, THIGH, SHIN, +1);
-
-    // ── Arms ──
     const UA = h * 0.20;
     const FA = h * 0.165;
-
-    // Left arm
-    // Ascent: reaches UP and back-left (explosive push-off energy)
-    // Apex:   spreads wide for hang pose
-    // Descent: sweeps forward and down for control
-    const lHX = shouldX
-      + ascentS  * (-h * 0.20)
-      + apexS    * (-h * 0.24)                    // wide splay
-      + descentS * (-h * 0.06);
-    const lHY = shouldY
-      + ascentS  * (-h * 0.18)                    // arms UP on ascent
-      + apexS    * (+h * 0.02)                    // level at apex
-      + descentS * (+h * 0.22);                   // arms down on descent
+    const lHX = shouldX + ascentS*(-h*0.20) + apexS*(-h*0.24) + descentS*(-h*0.06);
+    const lHY = shouldY + ascentS*(-h*0.18) + apexS*(+h*0.02) + descentS*(+h*0.22);
     const {jx:lEX, jy:lEY} = solveIK(shouldX, shouldY, lHX, lHY, UA, FA, +1);
-
-    // Right arm
-    const rHX = shouldX
-      + ascentS  * (+h * 0.18)
-      + apexS    * (+h * 0.24)
-      + descentS * (+h * 0.08);
-    const rHY = shouldY
-      + ascentS  * (-h * 0.16)
-      + apexS    * (+h * 0.02)
-      + descentS * (+h * 0.22);
+    const rHX = shouldX + ascentS*(+h*0.18) + apexS*(+h*0.24) + descentS*(+h*0.08);
+    const rHY = shouldY + ascentS*(-h*0.16) + apexS*(+h*0.02) + descentS*(+h*0.22);
     const {jx:rEX, jy:rEY} = solveIK(shouldX, shouldY, rHX, rHY, UA, FA, -1);
-
-    // ─────────────────────────────────────────────
-    // DRAW — full solid colour, no fading
-    // Back limbs slightly thinner for depth without opacity change
-    // ─────────────────────────────────────────────
     ctx.fillStyle = col;
-
-    // ── Back leg (right) ──
     ctx.lineWidth = 3.8;
     ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(rKX, rKY); ctx.lineTo(rFX, rFY); ctx.stroke();
     ctx.beginPath(); ctx.arc(rKX, rKY, 2.2, 0, Math.PI * 2); ctx.fill();
     this._drawFoot(ctx, rFX, rFY, rKX, rKY, descentS, 3.0);
-
-    // ── Back arm (right) ──
     ctx.lineWidth = 3.2;
     ctx.beginPath(); ctx.moveTo(shouldX, shouldY); ctx.lineTo(rEX, rEY); ctx.lineTo(rHX, rHY); ctx.stroke();
     ctx.beginPath(); ctx.arc(rEX, rEY, 2.0, 0, Math.PI * 2); ctx.fill();
-
-    // ── Torso ──
     ctx.lineWidth = 5.0;
     ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(shouldX, shouldY); ctx.stroke();
-
-    // ── Head ──
     this._drawHead(ctx, headX, headY, h, lean * 0.4);
-
-    // ── Front leg (left) ──
     ctx.lineWidth = 5.0;
     ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(lKX, lKY); ctx.lineTo(lFX, lFY); ctx.stroke();
     ctx.beginPath(); ctx.arc(lKX, lKY, 2.8, 0, Math.PI * 2); ctx.fill();
     this._drawFoot(ctx, lFX, lFY, lKX, lKY, descentS, 3.5);
-
-    // ── Front arm (left) ──
     ctx.lineWidth = 4.0;
     ctx.beginPath(); ctx.moveTo(shouldX, shouldY); ctx.lineTo(lEX, lEY); ctx.lineTo(lHX, lHY); ctx.stroke();
     ctx.beginPath(); ctx.arc(lEX, lEY, 2.5, 0, Math.PI * 2); ctx.fill();
-
-    // Ascent shimmer trail
     if (vy < -200 && Math.random() > 0.70)
       parts.emit(1, cx - 6, shouldY, {
         speed: 22, up: 8, life: 0.22, minSize: 1, maxSize: 2.8,
@@ -938,20 +772,15 @@ const player={
       });
   },
 
-  /* ── Foot: toe direction along shin, with a heel dot for ground contact ── */
   _drawFoot(ctx, fx, fy, kx, ky, swingVal, lw) {
     const dx  = fx - kx, dy = fy - ky;
     const len = Math.sqrt(dx * dx + dy * dy) || 1;
     const nx  = dx / len, ny = dy / len;
-    // toe extends forward in travel direction
     const footLen = 10;
     const toeX = fx + nx * 2 + ny * footLen;
     const toeY = fy + ny * 2 - nx * footLen * 0.35;
     ctx.lineWidth = lw || 3;
-    ctx.beginPath();
-    ctx.moveTo(fx, fy);
-    ctx.lineTo(toeX, toeY);
-    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(fx, fy); ctx.lineTo(toeX, toeY); ctx.stroke();
   },
 
   _drawHead(ctx,cx,hy,h,lean){
@@ -992,16 +821,18 @@ function drawHovercar(ctx,o,t){
   ctx.fillStyle=o.soff>0?'#ff7675':'#ffeaa7';
   ctx.beginPath(); ctx.arc(o.soff>0?x+w-3:x+3,gy+h*.4,4,0,Math.PI*2); ctx.fill();
 }
+
 function drawMonolith(ctx,o,t){
   const {x,y,w,h}=o;
   const g=ctx.createLinearGradient(x,y,x,y+h);
-  g.addColorStop(0,'#ff8040'); g.addColorStop(.5,'#fcd32b'); g.addColorStop(1,'#ffffff');
+  g.addColorStop(0,'#2c3e66'); g.addColorStop(.5,'#1a2340'); g.addColorStop(1,'#0d1225');
   ctx.fillStyle=g; ctx.fillRect(x,y,w,h);
   const p=Math.sin(t*(o.pulse||2))*.4+.6;
-  ctx.strokeStyle=`rgba(255,0,0,${.25*p})`; ctx.lineWidth=2; ctx.strokeRect(x,y,w,h);
-  ctx.fillStyle=`rgba(255,0,0,${.25*p})`;
+  ctx.strokeStyle=`rgba(100,180,255,${.15*p})`; ctx.lineWidth=2; ctx.strokeRect(x,y,w,h);
+  ctx.fillStyle=`rgba(0,210,255,${.25*p})`;
   for(let i=0;i<4;i++) ctx.fillRect(x+4,y+10+i*18,w-8,2+Math.sin(t*3+i)*2);
 }
+
 function drawPlasma(ctx,o,t){
   const {x,y,w,h}=o, f=o.flick||1;
   ctx.save(); ctx.shadowColor='#ff6b00'; ctx.shadowBlur=24+f*12;
@@ -1265,7 +1096,7 @@ const OBS={
    GAME STATE
    ════════════════════════════════════════════════ */
 let gameState='menu';
-let score=0, best=0, runTime=0, gameSpeed=300, nearMisses=0;
+let score=0, best=0, runTime=0, gameSpeed=300, nearMisses=0, coins=0;
 let cdVal=3, cdT=0, hitStop=0, timeScale=1;
 let time=0, lastT=performance.now();
 try{ best=parseFloat(localStorage.getItem('aether_best'))||0; }catch(e){}
@@ -1281,14 +1112,20 @@ function showCountdown(){
   $('gameOverScreen').classList.remove('show');
   $('gameOverScreen').style.display='none';
   $('hud').style.display='flex';
-  setTimeout(()=>{ $('hudDist').classList.add('active'); $('hudSpeed').classList.add('active'); $('shieldHud').classList.add('active'); },50);
+  setTimeout(()=>{
+    $('hudDist').classList.add('active');
+    $('hudSpeed').classList.add('active');
+    $('shieldHud').classList.add('active');
+    $('hudCoins').classList.add('active');
+  },50);
   try{Snd.count();}catch(e){}
 }
 
 function resetGame(){
-  gameState='countdown'; score=0; runTime=0; gameSpeed=300; nearMisses=0;
+  gameState='countdown'; score=0; runTime=0; gameSpeed=300; nearMisses=0; coins=0;
   cdVal=3; cdT=0; timeScale=1; hitStop=0;
   player.reset(); OBS.reset(); BULLETS.reset(); LASERS.reset(); SHIELD.reset(); parts.p=[];
+  $('valCoins').textContent='0';
   $('gameOverScreen').classList.remove('show'); $('gameOverScreen').style.display='none';
   $('goCard').classList.remove('open'); $('hud').style.display='flex';
   try{Snd.count();}catch(e){}
@@ -1304,6 +1141,7 @@ function endGame(){
   $('goBest').textContent=Math.floor(best)+'m';
   $('goTime').textContent=Math.floor(runTime)+'s';
   $('goNear').textContent=nearMisses;
+  $('goCoins').textContent=coins;
   $('hud').style.display='none';
   setTimeout(()=>{
     $('gameOverScreen').style.display='flex';
@@ -1400,14 +1238,32 @@ function update(dt){
     const pb=player.bounds();
     const hitPad=SHIELD.active?-8:8;
 
+    // ── every 500m = +1 coin ──
+    const earned = Math.floor(score / 500);
+    if(earned > coins){
+      coins = earned;
+      $('valCoins').textContent = coins;
+      parts.emit(14, player.gx, player.gy - player.H * 0.55, {
+        speed:110, up:80, life:.6, minSize:2, maxSize:6,
+        colors:['#ffd700','#fff8a0','#ffaa00','#ffe066'],
+        grav:220, grow:-5, add:true
+      });
+      try{ Snd.coin(); }catch(e){}
+    }
+
+    // ── obstacle & bullet collision ──
     for(const o of OBS.list){
       const ox=o.x, oy=o.y, ow=o.w, oh=o.h;
+
+      // Damage collision — skip non-damaging types
       if(pb.x < ox+ow-hitPad && pb.x+pb.w > ox+hitPad && pb.y < oy+oh-hitPad && pb.y+pb.h > oy+hitPad){
         if(SHIELD.active){
           SHIELD.block(ox+ow*.5, oy+oh*.5);
           o.x+=80;
         } else { endGame(); return; }
       }
+
+      // Near miss detection
       if(!o.near&&o.x+o.w<pb.x&&o.x+o.w>pb.x-50){
         const dy=Math.abs((pb.y+pb.h*.5)-(o.y+o.h*.5));
         if(dy<40){ o.near=true; nearMisses++; try{Snd.near();}catch(e){} }
