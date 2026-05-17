@@ -432,10 +432,7 @@ const BG={
   draw(ctx,t){
     /* Sky gradient — deep blue top to hazy horizon */
     const g=ctx.createLinearGradient(0,0,0,H);
-    g.addColorStop(0,'#4a8fd4');
-    g.addColorStop(.45,'#7ab4e8');
-    g.addColorStop(.78,'#b8d8f4');
-    g.addColorStop(1,'#d8ecf8');
+    g.addColorStop(0,'#07b5fa'); g.addColorStop(.4,'#5ccdfa'); g.addColorStop(1,'#8dddfc');
     ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
 
     /* Sun */
@@ -933,7 +930,7 @@ function drawHovercar(ctx,o,t){
 function drawMonolith(ctx,o,t){
   const {x,y,w,h}=o;
   const g=ctx.createLinearGradient(x,y,x,y+h);
-  g.addColorStop(0,'#9b59b6'); g.addColorStop(.5,'#7d3c98'); g.addColorStop(1,'#5b2c6f');
+  g.addColorStop(0,'#52006b'); g.addColorStop(.5,'#963fb0'); g.addColorStop(1,'#e186fc');
   ctx.fillStyle=g; ctx.fillRect(x,y,w,h);
   /* window grid */
   ctx.fillStyle='rgba(240,210,255,.6)';
