@@ -862,28 +862,86 @@ function drawHovercar(ctx,o,t){
   const {x,y,w,h}=o;
   const hov=Math.sin(t*o.hov+x*.01)*3;
   const gy=y+hov;
+  const bodyColor1=o.soff>0?'#e74c3c':'#3498db';
+  const bodyColor2=o.soff>0?'#c0392b':'#2980b9';
+
+  /* ── wheels (drawn first so body overlaps axle tops) ── */
+  const wr=h*.38;                    /* wheel radius */
+  const wcy=gy+h*.88;               /* wheel centre y — sits below body */
+  const wx1=x+w*.22;                /* front wheel centre x */
+  const wx2=x+w*.78;                /* rear wheel centre x */
+  const spinAng=t*gameSpeed*.018;   /* spin angle based on speed */
+
+  for(const wcx of [wx1,wx2]){
+    /* tyre */
+    ctx.fillStyle='#2c2c2c';
+    ctx.beginPath(); ctx.arc(wcx,wcy,wr,0,Math.PI*2); ctx.fill();
+    /* tyre sidewall highlight */
+    ctx.strokeStyle='#555'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(wcx,wcy,wr*.82,0,Math.PI*2); ctx.stroke();
+    /* hub cap */
+    ctx.fillStyle='#c8c8c8';
+    ctx.beginPath(); ctx.arc(wcx,wcy,wr*.48,0,Math.PI*2); ctx.fill();
+    /* spokes — rotate with speed */
+    ctx.strokeStyle='#888'; ctx.lineWidth=2;
+    for(let i=0;i<5;i++){
+      const a=spinAng+(i/5)*Math.PI*2;
+      ctx.beginPath();
+      ctx.moveTo(wcx+Math.cos(a)*wr*.14, wcy+Math.sin(a)*wr*.14);
+      ctx.lineTo(wcx+Math.cos(a)*wr*.44, wcy+Math.sin(a)*wr*.44);
+      ctx.stroke();
+    }
+    /* hub centre dot */
+    ctx.fillStyle='#555';
+    ctx.beginPath(); ctx.arc(wcx,wcy,wr*.12,0,Math.PI*2); ctx.fill();
+  }
+
+  /* ── wheel arch cutouts painted over tyre tops ── */
+  const archColor=bodyColor2;
+  ctx.fillStyle=archColor;
+  ctx.beginPath(); ctx.arc(wx1,wcy,wr*.9,Math.PI,0); ctx.fill();
+  ctx.beginPath(); ctx.arc(wx2,wcy,wr*.9,Math.PI,0); ctx.fill();
+
+  /* ── car body ── */
   const g=ctx.createLinearGradient(x,gy,x,gy+h);
-  g.addColorStop(0,o.soff>0?'#e74c3c':'#3498db');
-  g.addColorStop(1,o.soff>0?'#c0392b':'#2980b9');
-  ctx.fillStyle=g; rRect(ctx,x,gy+h*.22,w,h*.78,5); ctx.fill();
-  ctx.fillStyle='rgba(200,230,255,.5)'; rRect(ctx,x+w*.18,gy+h*.05,w*.64,h*.22,3); ctx.fill();
-  /* underside glow */
-  ctx.fillStyle='rgba(100,200,255,.25)'; ctx.globalAlpha=.4+Math.sin(t*12)*.15;
-  ctx.fillRect(x+w*.15,gy+h*.92,w*.08,h*.35); ctx.fillRect(x+w*.77,gy+h*.92,w*.08,h*.35);
-  ctx.globalAlpha=1;
-  ctx.fillStyle=o.soff>0?'#e74c3c':'#f1c40f';
-  ctx.beginPath(); ctx.arc(o.soff>0?x+w-3:x+3,gy+h*.4,4,0,Math.PI*2); ctx.fill();
+  g.addColorStop(0,bodyColor1); g.addColorStop(1,bodyColor2);
+  ctx.fillStyle=g; rRect(ctx,x,gy+h*.18,w,h*.65,5); ctx.fill();
+
+  /* body top highlight */
+  ctx.fillStyle='rgba(255,255,255,.18)';
+  ctx.fillRect(x+4,gy+h*.20,w-8,3);
+
+  /* windscreen */
+  ctx.fillStyle='rgba(200,230,255,.6)';
+  rRect(ctx,x+w*.16,gy+h*.03,w*.66,h*.20,3); ctx.fill();
+  /* glare strip on windscreen */
+  ctx.fillStyle='rgba(255,255,255,.35)';
+  ctx.fillRect(x+w*.19,gy+h*.05,w*.18,h*.06);
+
+  /* headlight / tail-light */
+  ctx.fillStyle=o.soff>0?'#ff8888':'#f1c40f';
+  ctx.beginPath(); ctx.arc(o.soff>0?x+w-4:x+4, gy+h*.38, 4, 0, Math.PI*2); ctx.fill();
+  /* opposite side running light */
+  ctx.fillStyle='rgba(255,255,255,.5)';
+  ctx.beginPath(); ctx.arc(o.soff>0?x+4:x+w-4, gy+h*.38, 2.5, 0, Math.PI*2); ctx.fill();
+
+  /* door line */
+  ctx.strokeStyle='rgba(0,0,0,.15)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(x+w*.5,gy+h*.22); ctx.lineTo(x+w*.5,gy+h*.83); ctx.stroke();
 }
 
 function drawMonolith(ctx,o,t){
   const {x,y,w,h}=o;
   const g=ctx.createLinearGradient(x,y,x,y+h);
-  g.addColorStop(0,'#8aa0c0'); g.addColorStop(.5,'#6a80a8'); g.addColorStop(1,'#4a6090');
+  g.addColorStop(0,'#9b59b6'); g.addColorStop(.5,'#7d3c98'); g.addColorStop(1,'#5b2c6f');
   ctx.fillStyle=g; ctx.fillRect(x,y,w,h);
   /* window grid */
-  ctx.fillStyle='rgba(220,240,255,.55)';
+  ctx.fillStyle='rgba(240,210,255,.6)';
   for(let i=0;i<4;i++) ctx.fillRect(x+4,y+10+i*18,w-8,2+Math.sin(t*3+i)*2);
-  ctx.strokeStyle='rgba(255,255,255,.18)'; ctx.lineWidth=1; ctx.strokeRect(x,y,w,h);
+  ctx.strokeStyle='rgba(220,180,255,.3)'; ctx.lineWidth=1; ctx.strokeRect(x,y,w,h);
+  /* top edge highlight */
+  ctx.fillStyle='rgba(200,150,255,.35)';
+  ctx.fillRect(x,y,w,2);
 }
 
 function drawPlasma(ctx,o,t){
