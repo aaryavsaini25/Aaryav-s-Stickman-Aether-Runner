@@ -370,11 +370,11 @@ const BG={
     {x:rand(0,2400),y:rand(20,120),w:rand(200,320),h:rand(60,100),spd:rand(8,18),alpha:rand(.5,.7)},
   ],
   city:[
-    {s:.03,fills:['#c8daf2','#b8cde8','#d0dff5'],h:.22,b:[]},
-    {s:.07,fills:['#a8c0e0','#98b4d8','#b4c8e8'],h:.18,b:[]},
-    {s:.14,fills:['#8aa8d0','#7a9cc8','#9ab0d8'],h:.15,b:[]},
-    {s:.28,fills:['#6a8cc0','#5a80b8','#7898c8'],h:.12,b:[]},
-  ],
+  {s:.03,fills:['#4a7438','#3a6828','#5a8448'],h:.22,b:[]},
+  {s:.07,fills:['#6a9058','#5a8448','#7aa068'],h:.18,b:[]},
+  {s:.14,fills:['#8aac78','#7a9c68','#9abc88'],h:.15,b:[]},
+  {s:.28,fills:['#b0c8a0','#a0bc90','#c0d4b0'],h:.12,b:[]},
+],
   win(w,h){
     const o=[],cols=Math.floor(w/14),rows=Math.floor(h/18);
     for(let r=0;r<rows;r++) for(let c=0;c<cols;c++)
@@ -466,26 +466,42 @@ const BG={
       ctx.lineTo(x,H-65-Math.sin(x*.007+1.5)*28-Math.sin(x*.003+2.5)*45);
     ctx.lineTo(W,H); ctx.closePath(); ctx.fill();
 
-    /* Buildings */
-    for(const L of this.city){
-      for(const b of L.b){
-        const by=H-68-b.h;
-        ctx.fillStyle=b.fill;
-        ctx.fillRect(b.x,by,b.w,b.h);
-        /* subtle window-reflection highlights */
-        ctx.fillStyle='rgba(255,255,255,.08)';
-        ctx.fillRect(b.x,by,b.w*.28,b.h);
-        /* windows */
-        for(const w of b.win){
-          const lit=Math.sin(t*w.flick+w.off)>-.5;
-          ctx.fillStyle=lit?w.col:'rgba(100,140,200,.06)';
-          ctx.fillRect(b.x+3+w.c*14,by+3+w.r*18,7,9);
-        }
-        /* building top edge */
-        ctx.fillStyle='rgba(255,255,255,.22)';
-        ctx.fillRect(b.x,by,b.w,2);
-      }
+    /* Trees */
+for(const L of this.city){
+  for(const b of L.b){
+    const by=H-68-b.h;
+    const cx=b.x+b.w*.5;
+    const layers=Math.max(2,Math.floor(b.h/38));
+    const trunkH=b.h*.90, trunkW=b.w*.14;
+
+    // Trunk
+    ctx.fillStyle='#402310';
+    ctx.fillRect(cx-trunkW*.5, by+b.h-trunkH, trunkW, trunkH);
+
+    // Foliage layers (stacked triangles, bottom to top)
+    for(let i=0;i<layers;i++){
+      const layerT=by+(b.h-trunkH)*((layers-1-i)/(layers+.4));
+      const layerW=b.w*(.9-i*(0.18/layers));
+      const layerH=(b.h-trunkH)*.55;
+      const g=Math.floor(100+i*14);
+      ctx.fillStyle=`rgba(20,${g},30,0.9)`;
+      ctx.beginPath();
+      ctx.moveTo(cx, layerT-20);
+      ctx.lineTo(cx+layerW*.4, layerT+layerH);
+      ctx.lineTo(cx-layerW*.4, layerT+layerH);
+      ctx.closePath();
+      ctx.fill();
+      // subtle highlight on left face
+      ctx.fillStyle='rgba(255,255,255,.06)';
+      ctx.beginPath();
+      ctx.moveTo(cx,layerT);
+      ctx.lineTo(cx-layerW*.15,layerT+layerH*.4);
+      ctx.lineTo(cx,layerT+layerH*.3);
+      ctx.closePath();
+      ctx.fill();
     }
+  }
+}
   }
 };
 BG.gen();
@@ -927,18 +943,40 @@ function drawHovercar(ctx,o,t){
   ctx.beginPath(); ctx.moveTo(x+w*.5,gy+h*.22); ctx.lineTo(x+w*.5,gy+h*.83); ctx.stroke();
 }
 
-function drawMonolith(ctx,o,t){
-  const {x,y,w,h}=o;
-  const g=ctx.createLinearGradient(x,y,x,y+h);
-  g.addColorStop(0,'#52006b'); g.addColorStop(.5,'#963fb0'); g.addColorStop(1,'#e186fc');
-  ctx.fillStyle=g; ctx.fillRect(x,y,w,h);
-  /* window grid */
-  ctx.fillStyle='rgba(240,210,255,.6)';
-  for(let i=0;i<4;i++) ctx.fillRect(x+4,y+10+i*18,w-8,2+Math.sin(t*3+i)*2);
-  ctx.strokeStyle='rgba(220,180,255,.3)'; ctx.lineWidth=1; ctx.strokeRect(x,y,w,h);
-  /* top edge highlight */
-  ctx.fillStyle='rgba(200,150,255,.35)';
-  ctx.fillRect(x,y,w,2);
+function drawMonolith(ctx, o, t) {
+  const {x, y, w, h} = o;
+
+  const cx = x + w * .5;
+  const trunkH = h * .22;
+  const trunkW = w * .14;
+  const layers = Math.max(2, Math.floor(h / 38));
+
+  // Trunk
+  ctx.fillStyle = '#5c3317';
+  ctx.fillRect(cx - trunkW * .5, y + h - trunkH, trunkW, trunkH);
+
+  // Foliage layers
+  for (let i = 0; i < layers; i++) {
+    const layerT = y + (h - trunkH) * ((layers - 1 - i) / (layers + .4));
+    const layerW = w * (.9 - i * (0.18 / layers));
+    const layerH = (h - trunkH) * .55;
+    const g = Math.floor(100 + i * 14);
+    ctx.fillStyle = `rgba(108,224,7)`;
+    ctx.beginPath();
+    ctx.moveTo(cx, layerT);
+    ctx.lineTo(cx + layerW * .5, layerT + layerH);
+    ctx.lineTo(cx - layerW * .5, layerT + layerH);
+    ctx.closePath();
+    ctx.fill();
+    // subtle highlight
+    ctx.fillStyle = 'rgba(255,255,255,.06)';
+    ctx.beginPath();
+    ctx.moveTo(cx, layerT);
+    ctx.lineTo(cx - layerW * .15, layerT + layerH * .4);
+    ctx.lineTo(cx, layerT + layerH * .3);
+    ctx.closePath();
+    ctx.fill();
+  }
 }
 
 function drawPlasma(ctx,o,t){
