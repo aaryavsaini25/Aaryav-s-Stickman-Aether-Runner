@@ -288,12 +288,12 @@ const BULLETS={
   draw(ctx){
     for(const b of this.list){
       ctx.save();
-      ctx.shadowColor='#e74c3c'; ctx.shadowBlur=12;
-      ctx.globalAlpha=.3; ctx.fillStyle='#c0392b';
+      ctx.shadowColor='#555555'; ctx.shadowBlur=12;
+      ctx.globalAlpha=.3; ctx.fillStyle='#242323';
       ctx.beginPath(); ctx.arc(b.x,b.y,b.r*2.2,0,Math.PI*2); ctx.fill();
-      ctx.globalAlpha=1; ctx.fillStyle='#e74c3c';
+      ctx.globalAlpha=1; ctx.fillStyle='#3b3a3a';
       ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle='#fff';
+      ctx.fillStyle='#575757';
       ctx.beginPath(); ctx.arc(b.x,b.y,b.r*.38,0,Math.PI*2); ctx.fill();
       ctx.restore();
     }
@@ -697,7 +697,7 @@ const player={
 
     ctx.save();
     /* player body — dark navy/charcoal for contrast against bright sky */
-    ctx.strokeStyle=SHIELD.active?'#00c853':'#2c3e6a';
+    ctx.strokeStyle=SHIELD.active?'#f7971e':'#2c3e6a';
     ctx.lineWidth=4;
     ctx.lineCap='round'; ctx.lineJoin='round';
 
