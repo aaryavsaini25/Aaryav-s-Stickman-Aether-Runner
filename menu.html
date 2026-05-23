@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AETHER RUNNER MENU</title>
+  <style>
+  </style>
+
+</head>
+<body>
+  <h1>AETHER RUNNER MENU</h1>
+
+  
+  <audio src="u_vdwj1c20kz-game-background-sound-342336.mp3" loop id="audiofile" autoplay></audio>
+  <img id="audiobutton" src="pause.png" alt="">
+<script>
+  const audiobutton=document.getElementById("audiobutton")
+  const audiofile=document.getElementById("audiofile")
+
+  let isPlay = true;
+
+  audiobutton.addEventListener("click",function() {
+    isPlay=!isPlay;
+
+    if(isPlay==false){
+      audiobutton.setAttribute("src", "play.png");
+      audiofile.pause();
+    }
+    if(isPlay==true){
+      audiobutton.setAttribute("src", "pause.png");
+      audiofile.play();
+    }
+    
+  })
+</script>
+</body>
+</html>
