@@ -12,7 +12,7 @@
   <h1>AETHER RUNNER MENU</h1>
 
   
-  <audio src="u_vdwj1c20kz-game-background-sound-342336.mp3" loop id="audiofile" autoplay></audio>
+  <audio src="u_vdwj1c20kz-game-background-sound-342336.mp3" loop id="audiofile" ></audio>
   <img id="audiobutton" src="pause.png" alt="">
   <button onclick="window.open('index.html', '_blank')">City-night 🌃</button>
   <button onclick="window.open('day-runner.html', '_blank')">City-day 🏙️</button>
@@ -21,18 +21,24 @@
   const audiobutton=document.getElementById("audiobutton")
   const audiofile=document.getElementById("audiofile")
 
+  function pauseAudio(){
+    audiobutton.setAttribute("src", "play.png");
+    audiofile.pause();
+  }
+  function playAudio(){
+    audiobutton.setAttribute("src", "pause.png");
+    audiofile.play();
+  }
   let isPlay = true;
 
   audiobutton.addEventListener("click",function() {
     isPlay=!isPlay;
 
     if(isPlay==false){
-      audiobutton.setAttribute("src", "play.png");
-      audiofile.pause();
+      pauseAudio();
     }
     if(isPlay==true){
-      audiobutton.setAttribute("src", "pause.png");
-      audiofile.play();
+      playAudio();
     }
     
   })
