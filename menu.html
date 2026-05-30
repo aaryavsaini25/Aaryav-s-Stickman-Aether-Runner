@@ -3,20 +3,133 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/x-icon" href="https://img.icons8.com/?size=100&id=NvAez9zuZg1W&format=png&color=000000">
   <title>AETHER RUNNER MENU</title>
   <style>
-  </style>
+  @keyframes slideUp{
+    from{opacity:0;transform:translateY(40px)}
+    to{opacity:1;transform:translateY(0)}
+  }
+  body{
+    background-color: #ff0505;
+  }
+ h1{
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: clamp(42px, 8vw, 75px);
+    font-weight: 900;
+    color: #1a2a4a;
+    text-transform: uppercase;
+    letter-spacing: clamp(4px, 1vw, 12px);
+    line-height: 1.05;
+    text-align: center;
+    text-shadow: 0 0 40px rgba(80,140,255,.25), 0 4px 12px rgba(0,0,0,.15);
+    animation: slideUp .7s cubic-bezier(.16,1,.3,1) .25s both;
+}
+h2{
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: clamp(36px, 6vw, 60px);
+    font-weight: 700;
+    color: #1a2a4a;
+    text-transform: uppercase;
+    letter-spacing: clamp(4px, 1vw, 12px);
+    line-height: 1.05;
+    text-align: center;
+    text-shadow: 0 0 40px rgba(80,140,255,.25), 0 4px 12px rgba(0,0,0,.15);
+    animation: slideUp .8s cubic-bezier(.16,1,.3,1) .30s both;
+}
+h3{
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: clamp(24px, 4vw, 40px);
+    font-weight: 900;
+    color: #1a2a4a;
+    text-transform: uppercase;
+    letter-spacing: clamp(4px, 1vw, 12px);
+    line-height: 1.05;
+    text-align: center;
+    text-shadow: 0 0 40px rgba(80,140,255,.25), 0 4px 12px rgba(0,0,0,.15);
+    animation: slideUp .9s cubic-bezier(.16,1,.3,1) .35s both;
+}
+#button1{
+  box-Shadow: #ffffff 0px 5px 10px;
+  display: inline-block;
+  margin: 20px 10px;
+  padding: 15px 30px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #fff;
+  background-color: #1a2a4a;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color .3s ease, transform .3s ease;
+  animation: slideUp .9s cubic-bezier(.16,1,.3,1) .40s both;
+}
+#button2{
+  box-Shadow: #ffffff 0px 5px 10px;
+  display: inline-block;
+  margin: 20px 10px;
+  padding: 15px 30px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #fff;
+  background-color: #1a2a4a;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color .3s ease, transform .3s ease;
+  animation: slideUp .9s cubic-bezier(.16,1,.3,1) .45s both;
+}
+#button3{
+  box-Shadow: #ffffff 0px 5px 10px;
+  display: inline-block;
+  margin: 20px 10px;
+  padding: 15px 30px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #fff;
+  background-color: #1a2a4a;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color .3s ease, transform .3s ease;
+  animation: slideUp .9s cubic-bezier(.16,1,.3,1) .50s both;
+}
+#button1:hover, #button2:hover, #button3:hover {
+  scale: 1.08;
+  translate: 0 -3px; 
+  box-shadow: #000000 0px 5px 10px;
+  background-color: #3a4a6a;
+}
+
+#audiobutton{
+  box-Shadow: #ffffff 0px 5px 10px;
+  transition: transform .3s ease, box-shadow .3s ease;
+  animation: slideUp .9s cubic-bezier(.16,1,.3,1) .55s both;
+  background-color: transparent;
+
+}
+#audiobutton:hover{
+  scale: 1.08;
+  translate: 0 -3px;
+  box-Shadow: #000000 0px 5px 10px;
+}
+</style>
 
 </head>
 <body>
-  <h1>AETHER RUNNER MENU</h1>
+  <h1>AETHER</h1>
+  <h2>RUNNER</h2>
+  <h3>MENU</h3>
+
 
   
   <audio src="u_vdwj1c20kz-game-background-sound-342336.mp3" loop id="audiofile"></audio>
-  <img id="audiobutton" src="pause.png" alt="">
-  <button onclick="window.open('index.html', '_blank')">City-night 🌃</button>
-  <button onclick="window.open('day-runner.html', '_blank')">City-day 🏙️</button>
-  <button onclick="window.open('forest-runner.html', '_blank')">Forest 🌳</button>
+  <img id="audiobutton" src="pause.png" alt="Pause Audio" style="width: 30px; height: 30px; position: absolute; top: 10px; right: 10px;" id="audiobutton">
+  
+  <button onclick="window.open('index.html', '_blank')" style="position: center;" id="button1">City-night 🌃</button>
+  <button onclick="window.open('day-runner.html', '_blank')" style="position: center;" id="button2">City-day 🏙️</button>
+  <button onclick="window.open('forest-runner.html', '_blank')" style="position: center;" id="button3">Forest 🌳</button>
+
 <script>
   const audiobutton=document.getElementById("audiobutton")
   const audiofile=document.getElementById("audiofile")
