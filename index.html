@@ -207,7 +207,13 @@ h3{
   }
 
   let coins = localStorage.getItem("coins");
-  document.getElementById("coins").textContent =`Coins: ${coins}`;
+  if (coins==null){
+    document.getElementById("coins").textContent =`Coins: 0`;
+  }
+  else {
+    document.getElementById("coins").textContent =`Coins: ${coins}`;
+  }
+  
 
 </script>
 </body>
