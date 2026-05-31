@@ -1295,7 +1295,7 @@ function update(dt){
     const hitPad=SHIELD.active?-8:8;
 
     // ── every 500m = +1 coin ──
-    const earned = Math.floor(score / 100);
+    const earned = Math.floor(score / 500);
     if(earned > coins){
       coins = earned;
       let totalCoins=localStorage.getItem("coins");
