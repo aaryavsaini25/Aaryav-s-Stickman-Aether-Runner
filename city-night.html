@@ -1298,6 +1298,7 @@ function update(dt){
     const earned = Math.floor(score / 500);
     if(earned > coins){
       coins = earned;
+      localStorage.setItem("coins",coins)
       $('valCoins').textContent = coins;
       parts.emit(14, player.gx, player.gy - player.H * 0.55, {
         speed:110, up:80, life:.6, minSize:2, maxSize:6,
@@ -1305,6 +1306,7 @@ function update(dt){
         grav:220, grow:-5, add:true
       });
       try{ Snd.coin(); }catch(e){}
+
     }
 
     // ── obstacle & bullet collision ──
