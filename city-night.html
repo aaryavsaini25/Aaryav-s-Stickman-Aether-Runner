@@ -1299,6 +1299,9 @@ function update(dt){
     if(earned > coins){
       coins = earned;
       let totalCoins=localStorage.getItem("coins");
+      if (totalCoins==null){
+        totalCoins=0;
+      }
       localStorage.setItem("coins",coins+parseInt(totalCoins));
       $('valCoins').textContent = coins;
       parts.emit(14, player.gx, player.gy - player.H * 0.55, {
