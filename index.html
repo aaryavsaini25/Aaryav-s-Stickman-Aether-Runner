@@ -172,6 +172,7 @@ h3{
             <h5>Character:Flame Skull</h5>
             <img src="stickman-fire-skull.png" alt="" style="width: 300px; height: 300px; position: absolute; top: 80px; left: 20px;">
             <h5>Price: 2 coins 🪙</h5>
+            <h4 id="alert" style="text-align: right;"></h4>
             <img onclick="buy(2)" src="buy.png" alt="" style="width: 200px; height: 200px; position: absolute; top: 350px; left: 20px;">
             <img onclick="closePopup()" id="audiobutton" src="close.png" alt="Pause Audio" style="width: 30px; height: 30px; position: absolute; bottom: -1000px; right: 75px;" id="settingsbutton"> 
     </div>
@@ -190,10 +191,17 @@ h3{
   const audiobutton=document.getElementById("audiobutton")
   const audiofile=document.getElementById("audiofile")
 
+  total_coins=localStorage.getItem("coins")
+  if (total_coins<parseInt('0')){
+    localStorage.setItem("coins",'0')
+  }
   function buy(price){
     total_coins=localStorage.getItem("coins")
     total_coins=total_coins-price
     localStorage.setItem("coins",total_coins)
+    if (total_coins<price){
+      document.getElementById('alert').innerText='You do not have enough coins!'
+    }
   }
 
   function pauseAudio(){
